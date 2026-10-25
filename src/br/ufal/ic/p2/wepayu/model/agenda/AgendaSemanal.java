@@ -5,7 +5,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-public final class AgendaSemanal implements AgendaPagamento {
+final class AgendaSemanal implements AgendaPagamento {
     private static final long serialVersionUID = 1L;
     private static final LocalDate INICIO_CALENDARIO = LocalDate.of(2005, 1, 1);
     private static final BigDecimal SEMANAS_NO_ANO = new BigDecimal("52");
@@ -13,7 +13,7 @@ public final class AgendaSemanal implements AgendaPagamento {
     private final int intervaloSemanas;
     private final int diaSemana;
 
-    public AgendaSemanal(int intervaloSemanas, int diaSemana) {
+    AgendaSemanal(int intervaloSemanas, int diaSemana) {
         if (intervaloSemanas < 1 || intervaloSemanas > 52 || diaSemana < 1 || diaSemana > 7) {
             throw new IllegalArgumentException("Descricao de agenda invalida");
         }

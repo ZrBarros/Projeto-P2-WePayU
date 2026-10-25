@@ -3,9 +3,11 @@ package br.ufal.ic.p2.wepayu.service;
 import br.ufal.ic.p2.wepayu.exceptions.EmpregadoNaoExisteException;
 import br.ufal.ic.p2.wepayu.exceptions.IdentificacaoEmpregadoNulaException;
 import br.ufal.ic.p2.wepayu.exceptions.AgendaPagamentoIndisponivelException;
+import br.ufal.ic.p2.wepayu.exceptions.AgendaPagamentoJaExisteException;
+import br.ufal.ic.p2.wepayu.exceptions.DescricaoAgendaInvalidaException;
 import br.ufal.ic.p2.wepayu.model.Empregado;
 import br.ufal.ic.p2.wepayu.model.agenda.AgendaPagamento;
-import br.ufal.ic.p2.wepayu.model.agenda.AgendasPadrao;
+import br.ufal.ic.p2.wepayu.model.agenda.CatalogoAgendasPagamento;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,7 +22,7 @@ public final class EstadoSistema implements Serializable {
     private static final long serialVersionUID = 2L;
 
     private final LinkedHashMap<String, Empregado> empregados = new LinkedHashMap<>();
-    private LinkedHashMap<String, AgendaPagamento> agendasPagamento = criarAgendasPadrao();
+    private CatalogoAgendasPagamento catalogoAgendas = new CatalogoAgendasPagamento();
     private int proximoId = 1;
 
     public String consultarProximoId() {
@@ -62,11 +64,12 @@ public final class EstadoSistema implements Serializable {
 
     public AgendaPagamento buscarAgendaPagamento(String descricao)
             throws AgendaPagamentoIndisponivelException {
-        AgendaPagamento agenda = agendasPagamento().get(descricao);
-        if (agenda == null) {
-            throw new AgendaPagamentoIndisponivelException();
-        }
-        return agenda;
+        return catalogoAgendas().buscar(descricao);
+    }
+
+    public void criarAgendaPagamento(String descricao)
+            throws AgendaPagamentoJaExisteException, DescricaoAgendaInvalidaException {
+        catalogoAgendas().criar(descricao);
     }
 
     public EstadoSistema copiar() {
@@ -83,23 +86,10 @@ public final class EstadoSistema implements Serializable {
         }
     }
 
-    private LinkedHashMap<String, AgendaPagamento> agendasPagamento() {
-        if (agendasPagamento == null) {
-            agendasPagamento = criarAgendasPadrao();
+    private CatalogoAgendasPagamento catalogoAgendas() {
+        if (catalogoAgendas == null) {
+            catalogoAgendas = new CatalogoAgendasPagamento();
         }
-        return agendasPagamento;
-    }
-
-    private static LinkedHashMap<String, AgendaPagamento> criarAgendasPadrao() {
-        LinkedHashMap<String, AgendaPagamento> agendas = new LinkedHashMap<>();
-        adicionarAgenda(agendas, AgendasPadrao.horista());
-        adicionarAgenda(agendas, AgendasPadrao.assalariado());
-        adicionarAgenda(agendas, AgendasPadrao.comissionado());
-        return agendas;
-    }
-
-    private static void adicionarAgenda(LinkedHashMap<String, AgendaPagamento> agendas,
-                                        AgendaPagamento agenda) {
-        agendas.put(agenda.descricao(), agenda);
+        return catalogoAgendas;
     }
 }

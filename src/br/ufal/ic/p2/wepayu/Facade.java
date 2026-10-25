@@ -94,6 +94,10 @@ public final class Facade {
         return sistema.totalFolha(data);
     }
 
+    public void criarAgendaDePagamentos(String descricao) throws WePayUException {
+        sistema.criarAgendaDePagamentos(descricao);
+    }
+
     public void rodaFolha(String data, String saida) throws WePayUException {
         sistema.rodaFolha(data, saida);
     }

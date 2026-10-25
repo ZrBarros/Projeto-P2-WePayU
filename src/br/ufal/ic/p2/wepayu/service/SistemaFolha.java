@@ -153,6 +153,13 @@ public final class SistemaFolha {
         return folhaPagamento.total(estado, dia);
     }
 
+    public void criarAgendaDePagamentos(String descricao) throws WePayUException {
+        executarAlteracao(estadoAtual -> {
+            estadoAtual.criarAgendaPagamento(descricao);
+            return null;
+        });
+    }
+
     public void rodaFolha(String data, String arquivoSaida) throws WePayUException {
         LocalDate dia = ConversorEntrada.data(data, "Data invalida.");
         executarAlteracao(estadoAtual -> {

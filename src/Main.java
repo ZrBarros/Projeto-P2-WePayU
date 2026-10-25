@@ -11,7 +11,8 @@ public class Main {
                 "tests/us5.txt", "tests/us5_1.txt",
                 "tests/us6.txt", "tests/us6_1.txt",
                 "tests/us7.txt", "tests/us8.txt",
-                "tests/us9.txt", "tests/us9_1.txt"
+                "tests/us9.txt", "tests/us9_1.txt",
+                "tests/us10.txt", "tests/us10_1.txt"
         } : args;
         for (String teste : testes) {
             EasyAccept.main(new String[]{facade, teste});

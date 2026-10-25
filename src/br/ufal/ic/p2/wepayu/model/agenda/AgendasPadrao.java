@@ -9,7 +9,7 @@ public final class AgendasPadrao {
     }
 
     public static AgendaPagamento assalariado() {
-        return new AgendaMensal(null);
+        return new AgendaMensalUltimoDia();
     }
 
     public static AgendaPagamento comissionado() {
