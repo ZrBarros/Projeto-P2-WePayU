@@ -68,6 +68,7 @@ final class CadastroEmpregados {
             case "sindicalizado" -> Boolean.toString(empregado.isSindicalizado());
             case "idSindicato" -> empregado.getIdSindicato();
             case "taxaSindical" -> Formatador.dinheiro(empregado.getTaxaSindical());
+            case "agendaPagamento" -> empregado.getAgendaPagamento();
             default -> throw new AtributoNaoExisteException();
         };
     }
@@ -84,6 +85,8 @@ final class CadastroEmpregados {
             case "comissao" -> empregado.alterarComissao(ConversorEntrada.comissao(valor));
             case "metodoPagamento" -> alterarMetodoSimples(empregado, valor);
             case "sindicalizado" -> alterarSindicalizacaoSimples(empregado, valor);
+            case "agendaPagamento" -> empregado.alterarAgendaPagamento(
+                    estado.buscarAgendaPagamento(valor));
             default -> throw new AtributoNaoExisteException();
         }
     }

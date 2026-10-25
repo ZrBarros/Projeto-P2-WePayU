@@ -1,9 +1,10 @@
 package br.ufal.ic.p2.wepayu.model;
 
 import br.ufal.ic.p2.wepayu.util.Formatador;
+import br.ufal.ic.p2.wepayu.model.agenda.AgendaPagamento;
+import br.ufal.ic.p2.wepayu.model.agenda.AgendasPadrao;
 
 import java.math.BigDecimal;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
@@ -15,7 +16,7 @@ public final class EmpregadoHorista extends Empregado {
     private final ArrayList<CartaoPonto> cartoes = new ArrayList<>();
 
     public EmpregadoHorista(String id, String nome, String endereco, BigDecimal salarioHora) {
-        super(id, nome, endereco, salarioHora);
+        super(id, nome, endereco, salarioHora, AgendasPadrao.horista());
     }
 
     @Override
@@ -24,13 +25,8 @@ public final class EmpregadoHorista extends Empregado {
     }
 
     @Override
-    public boolean deveReceber(LocalDate data) {
-        return data.getDayOfWeek() == DayOfWeek.FRIDAY;
-    }
-
-    @Override
-    public LocalDate inicioPeriodo(LocalDate pagamento) {
-        return pagamento.minusDays(6);
+    protected AgendaPagamento agendaPadrao() {
+        return AgendasPadrao.horista();
     }
 
     @Override
@@ -51,14 +47,16 @@ public final class EmpregadoHorista extends Empregado {
                 .map(CartaoPonto::getData)
                 .min(LocalDate::compareTo)
                 .orElse(pagamento);
-        for (LocalDate anterior = pagamento.minusWeeks(1);
+        for (LocalDate anterior = pagamentoAnterior(pagamento);
              !anterior.isBefore(primeiroCartao);
-             anterior = anterior.minusWeeks(1)) {
+             anterior = pagamentoAnterior(anterior)) {
             if (calcularBruto(anterior).getBruto().compareTo(BigDecimal.ZERO) > 0) {
                 return anterior.plusDays(1);
             }
         }
-        return primeiroCartao;
+        return primeiroCartao.isAfter(inicioPeriodo(pagamento))
+                ? primeiroCartao
+                : inicioPeriodo(pagamento);
     }
 
     @Override

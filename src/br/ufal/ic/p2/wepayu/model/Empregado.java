@@ -1,6 +1,7 @@
 package br.ufal.ic.p2.wepayu.model;
 
 import br.ufal.ic.p2.wepayu.exceptions.RegraNegocioException;
+import br.ufal.ic.p2.wepayu.model.agenda.AgendaPagamento;
 import br.ufal.ic.p2.wepayu.model.pagamento.MetodoPagamento;
 import br.ufal.ic.p2.wepayu.model.pagamento.PagamentoCorreios;
 import br.ufal.ic.p2.wepayu.model.pagamento.PagamentoEmMaos;
@@ -17,23 +18,32 @@ public abstract class Empregado implements Serializable {
     private String nome;
     private String endereco;
     private BigDecimal salario;
+    private AgendaPagamento agendaPagamento;
     private MetodoPagamento metodoPagamento = new PagamentoEmMaos();
     private FiliacaoSindical filiacaoSindical;
 
-    protected Empregado(String id, String nome, String endereco, BigDecimal salario) {
+    protected Empregado(String id, String nome, String endereco, BigDecimal salario,
+                        AgendaPagamento agendaPagamento) {
         this.id = textoValido(id, "Identificacao do empregado nao pode ser nula.");
         this.nome = textoValido(nome, "Nome nao pode ser nulo.");
         this.endereco = textoValido(endereco, "Endereco nao pode ser nulo.");
         this.salario = valorNaoNegativo(salario, "Salario deve ser nao-negativo.");
+        this.agendaPagamento = Objects.requireNonNull(agendaPagamento, "agendaPagamento");
     }
 
     public abstract TipoEmpregado getTipo();
 
-    public abstract boolean deveReceber(LocalDate data);
-
-    public abstract LocalDate inicioPeriodo(LocalDate pagamento);
-
     public abstract CalculoBruto calcularBruto(LocalDate pagamento);
+
+    protected abstract AgendaPagamento agendaPadrao();
+
+    public boolean deveReceber(LocalDate data) {
+        return agendaPagamento().devePagar(data);
+    }
+
+    public LocalDate inicioPeriodo(LocalDate pagamento) {
+        return agendaPagamento().inicioPeriodo(pagamento);
+    }
 
     public LocalDate inicioDescontos(LocalDate pagamento) {
         return inicioPeriodo(pagamento);
@@ -67,6 +77,14 @@ public abstract class Empregado implements Serializable {
 
     public BigDecimal getSalario() {
         return salario;
+    }
+
+    public String getAgendaPagamento() {
+        return agendaPagamento().descricao();
+    }
+
+    public void alterarAgendaPagamento(AgendaPagamento agendaPagamento) {
+        this.agendaPagamento = Objects.requireNonNull(agendaPagamento, "agendaPagamento");
     }
 
     public void alterarSalario(BigDecimal salario) throws RegraNegocioException {
@@ -174,6 +192,15 @@ public abstract class Empregado implements Serializable {
     public void herdarDadosComuns(Empregado origem) {
         metodoPagamento = origem.metodoPagamento;
         filiacaoSindical = origem.filiacaoSindical;
+        agendaPagamento = origem.agendaPagamento();
+    }
+
+    protected BigDecimal salarioDoPeriodo() {
+        return agendaPagamento().salarioDoPeriodo(salario);
+    }
+
+    protected LocalDate pagamentoAnterior(LocalDate pagamento) {
+        return agendaPagamento().pagamentoAnterior(pagamento);
     }
 
     protected boolean noPeriodo(LocalDate data, LocalDate inicio, LocalDate fimExclusivo) {
@@ -185,6 +212,13 @@ public abstract class Empregado implements Serializable {
             throw new RegraNegocioException("Empregado nao eh sindicalizado.");
         }
         return filiacaoSindical;
+    }
+
+    private AgendaPagamento agendaPagamento() {
+        if (agendaPagamento == null) {
+            agendaPagamento = agendaPadrao();
+        }
+        return agendaPagamento;
     }
 
     private static String textoValido(String valor, String mensagem) {

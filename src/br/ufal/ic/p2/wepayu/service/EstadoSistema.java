@@ -2,7 +2,10 @@ package br.ufal.ic.p2.wepayu.service;
 
 import br.ufal.ic.p2.wepayu.exceptions.EmpregadoNaoExisteException;
 import br.ufal.ic.p2.wepayu.exceptions.IdentificacaoEmpregadoNulaException;
+import br.ufal.ic.p2.wepayu.exceptions.AgendaPagamentoIndisponivelException;
 import br.ufal.ic.p2.wepayu.model.Empregado;
+import br.ufal.ic.p2.wepayu.model.agenda.AgendaPagamento;
+import br.ufal.ic.p2.wepayu.model.agenda.AgendasPadrao;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -17,6 +20,7 @@ public final class EstadoSistema implements Serializable {
     private static final long serialVersionUID = 2L;
 
     private final LinkedHashMap<String, Empregado> empregados = new LinkedHashMap<>();
+    private LinkedHashMap<String, AgendaPagamento> agendasPagamento = criarAgendasPadrao();
     private int proximoId = 1;
 
     public String consultarProximoId() {
@@ -56,6 +60,15 @@ public final class EstadoSistema implements Serializable {
         return List.copyOf(empregados.values());
     }
 
+    public AgendaPagamento buscarAgendaPagamento(String descricao)
+            throws AgendaPagamentoIndisponivelException {
+        AgendaPagamento agenda = agendasPagamento().get(descricao);
+        if (agenda == null) {
+            throw new AgendaPagamentoIndisponivelException();
+        }
+        return agenda;
+    }
+
     public EstadoSistema copiar() {
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -68,5 +81,25 @@ public final class EstadoSistema implements Serializable {
         } catch (IOException | ClassNotFoundException excecao) {
             throw new IllegalStateException("Falha ao copiar o estado do sistema", excecao);
         }
+    }
+
+    private LinkedHashMap<String, AgendaPagamento> agendasPagamento() {
+        if (agendasPagamento == null) {
+            agendasPagamento = criarAgendasPadrao();
+        }
+        return agendasPagamento;
+    }
+
+    private static LinkedHashMap<String, AgendaPagamento> criarAgendasPadrao() {
+        LinkedHashMap<String, AgendaPagamento> agendas = new LinkedHashMap<>();
+        adicionarAgenda(agendas, AgendasPadrao.horista());
+        adicionarAgenda(agendas, AgendasPadrao.assalariado());
+        adicionarAgenda(agendas, AgendasPadrao.comissionado());
+        return agendas;
+    }
+
+    private static void adicionarAgenda(LinkedHashMap<String, AgendaPagamento> agendas,
+                                        AgendaPagamento agenda) {
+        agendas.put(agenda.descricao(), agenda);
     }
 }
